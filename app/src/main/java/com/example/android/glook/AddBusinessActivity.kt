@@ -1,5 +1,6 @@
 package com.example.android.glook
 
+import android.R
 import android.app.Activity
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -32,9 +33,13 @@ class AddBusinessActivity : AppCompatActivity() {
 
 
     private var upload : Upload? = null
+    private var image_url: String? = null
+
 
     //uri to store file
     private var filePath: Uri? = null
+
+    private var downloadUrl: String? = null
 
     //firebase objects
     private var storageReference: StorageReference? = null
@@ -46,7 +51,7 @@ class AddBusinessActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_business)
+        setContentView(com.example.android.glook.R.layout.activity_add_business)
 
         storageReference = FirebaseStorage.getInstance().getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference("business_image")
@@ -116,7 +121,19 @@ class AddBusinessActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "File Uploaded ", Toast.LENGTH_LONG).show()
 
                     //creating the upload object to store uploaded image details
+//                    sRef.downloadUrl.addOnCompleteListener{ uri ->
+//                        if (uri.isSuccessful){
+//                             downloadUrl = uri.result.toString()
+//                        }else {
+//                            toast(uri.exception!!.message.toString())
+//                        }
+//
+//                        image_url = uri.toString()
+//                        toast(image_url!!)
+//                    }
                      upload = Upload(shop_name_et.text.toString().trim(), taskSnapshot.uploadSessionUri.toString())
+
+                    image_url = taskSnapshot.uploadSessionUri.toString()
 
                         uploadBussinessDetails()
                     //adding an upload to firebase database
@@ -143,15 +160,16 @@ class AddBusinessActivity : AppCompatActivity() {
         progressDialog.setTitle("Adding Business Information to Database")
         progressDialog.show()
 
-         val shop= Shops(shopName!!, shopAddress!!, shopBvn!!, upload!!)
+         val shop= Shops(shopName!!, shopAddress!!, shopBvn!!, image_url!!)
          var database: DatabaseReference = FirebaseDatabase.getInstance().reference
 // ...
-        database!!.child("Vendor Stores").child(userId!!).setValue(shop).
+        database!!.child("vendor_stores").child(userId!!).setValue(shop).
                 addOnSuccessListener {
 
                     progressDialog.dismiss()
                     toast("Upload Complete")
                     startActivity(Intent(this, AddServiceActivity::class.java))
+                    finish()
                 }.
                 addOnFailureListener{exception ->
                     toast(exception.message!!)

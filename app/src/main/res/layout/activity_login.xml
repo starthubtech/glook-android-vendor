@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_email"
                 android:textColorHint="@color/ash_color"
-                android:drawableLeft="@drawable/ic_person"/>
+                android:drawableLeft="@drawable/ic_person" android:inputType="textEmailAddress"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -95,7 +95,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_password"
                 android:textColorHint="@color/ash_color"
-                android:drawableLeft="@drawable/ic_lock"/>
+                android:drawableLeft="@drawable/ic_lock" android:inputType="textPassword"/>
 
     </android.support.design.widget.TextInputLayout>
 

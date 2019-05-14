@@ -4,18 +4,24 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.CardView
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
 
 
     private var mAuth: FirebaseAuth? = null
-    private var loginCard: CardView? = null
 
 
     private var login_email_et: EditText? = null
@@ -24,11 +30,17 @@ class LoginActivity : AppCompatActivity() {
     private var phone : String? = null
     private var firstName: String? = null
     private var lastName: String? = null
+    private var hasService: Boolean= false
+
+   private  var currentFirebaseUser: FirebaseUser? = null
+    private var userId : String? =null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+
 
 
         mAuth = FirebaseAuth.getInstance()
@@ -39,8 +51,9 @@ class LoginActivity : AppCompatActivity() {
 
 
         sign_in_btn!!.setOnClickListener{logInUser()}
-        sign_up_link.setOnClickListener{startActivity(Intent(this, SignupActivity::class.java))
-            finish()}
+        sign_up_link.setOnClickListener{startActivity(Intent(this, SignupActivity::class.java))}
+
+
 
         val intent = intent
         if (intent.hasExtra("email")){
@@ -59,6 +72,25 @@ class LoginActivity : AppCompatActivity() {
 
        //forgot_password_link.setOnClickListener{startActivity(Intent(this, ForgotPasswordActivity::class.java))}
     }
+ fun checkForService(){
+     var rootRef  = FirebaseDatabase.getInstance().reference
+
+         rootRef.addListenerForSingleValueEvent(object : ValueEventListener {
+             override fun onCancelled(p0: DatabaseError) {
+
+             }
+
+             override fun onDataChange(snapshot: DataSnapshot) {
+                 if (snapshot.hasChild("vendor_stores/$userId")) {
+                     // run some code
+                     hasService = true
+                 }
+             }
+         })
+
+         }
+
+
 
 
     private fun logInUser() {
@@ -73,25 +105,36 @@ class LoginActivity : AppCompatActivity() {
 
         if (TextUtils.isEmpty(email) && TextUtils.isEmpty(password)){
             progressDialog.dismiss()
-                login_email_et!!.setError("Please enter a valid email")
-                login_password_et!!.setError("Please enter your password")
+                login_email_et!!.error = "Please enter a valid email"
+                login_password_et!!.error = "Please enter your password"
             }else{
             progressDialog.setTitle("Logging In...")
-            mAuth!!.signInWithEmailAndPassword(email, password.toString())
+            mAuth!!.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        currentFirebaseUser = FirebaseAuth.getInstance().currentUser
+                        userId = currentFirebaseUser!!.uid
+                        checkForService()
+
                         progressDialog.dismiss()
-                        val loginIntent = Intent(this,AddBusinessActivity::class.java)
-                        // val user = User(firstName, lastName, email, password, phone)
+
+                        if (hasService){
+                            startActivity(Intent(this, HomeActivity::class.java))
+                            finish()
+                        }else{
+                            val loginIntent = Intent(this,AddBusinessActivity::class.java)
+                            // val user = User(firstName, lastName, email, password, phone)
 
 
-                        loginIntent.putExtra("firstName",firstName)
-                       // loginIntent.putExtra("email", email)
-                        //loginIntent.putExtra("password",password)
-                        loginIntent.putExtra("lastName",lastName)
-                        loginIntent.putExtra("phone",phone)
-                        startActivity(loginIntent)
-                        finish()
+                            loginIntent.putExtra("firstName",firstName)
+                            // loginIntent.putExtra("email", email)
+                            //loginIntent.putExtra("password",password)
+                            loginIntent.putExtra("lastName",lastName)
+                            loginIntent.putExtra("phone",phone)
+                            startActivity(loginIntent)
+                            finish()
+                            }
+
 
                         //Manage error
                     }else // val user = User(firstName, lastName, email, password, phone)
@@ -103,7 +146,8 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 }
+}
 
 
 //ProgressDialog proDialog = ProgressDialog.show(this, "title", "message");
-}
+

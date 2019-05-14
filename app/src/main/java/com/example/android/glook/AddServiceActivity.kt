@@ -18,15 +18,15 @@ class AddServiceActivity : AppCompatActivity() {
 
     private var serviceName1 : String? = null
     private var serviceCost1 : String? = null
-    private var serviceName2 : String? = null
-    private var serviceCost2 : String? = null
+//    private var serviceName2 : String? = null
+//    private var serviceCost2 : String? = null
     private var service: Service? = null
 
     private var mDatabase: DatabaseReference? = null
     var currentFirebaseUser: FirebaseUser? = null
     var userId : String? =null
 
-    private lateinit var database: DatabaseReference
+    private var database: DatabaseReference? = null
 // ...
 
 
@@ -37,7 +37,7 @@ class AddServiceActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance().reference
 
 
-        currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
+        currentFirebaseUser = FirebaseAuth.getInstance().currentUser
         userId = currentFirebaseUser!!.uid
 
         submit_service_btn.setOnClickListener{checkEditTextFields()}
@@ -50,8 +50,8 @@ class AddServiceActivity : AppCompatActivity() {
 
         serviceName1 = service_name1.text.toString()
         serviceCost1 = service_cost1.text.toString()
-        serviceName2 = service_name2.text.toString()
-        serviceCost2 = service_cost2.text.toString()
+//        serviceName2 = service_name2.text.toString()
+//        serviceCost2 = service_cost2.text.toString()
 
         if(TextUtils.isEmpty(serviceName1) || TextUtils.isEmpty(serviceCost1)){
             service_name1.error = "Please enter a service name"
@@ -60,23 +60,22 @@ class AddServiceActivity : AppCompatActivity() {
         }else{
 
 
-            if(TextUtils.isEmpty(serviceName2) || TextUtils.isEmpty(serviceCost2)){
-                 service = Service(serviceName1!!, serviceCost1!!)
-            }else{
-                service = Service(serviceName1!!, serviceCost1!!)
-            }
-        }
 
-        database.child("services").child(userId!!).setValue(service).
+                 service = Service(serviceName1!!, serviceCost1!!, userId!!)
+            database!!.child("services").child(userId!!).setValue(service).
                 addOnSuccessListener {
                     toast("Upload Successfull")
                     startActivity(Intent(this, HomeActivity::class.java))
                     finish()
                 }
-            .addOnFailureListener{exception ->
-                toast(exception.message!!)
+                .addOnFailureListener{exception ->
+                    toast(exception.message!!)
 
-            }
+                }
+
+        }
+
+
 
 
 
